@@ -58,9 +58,34 @@ const App = (() => {
     window.addEventListener('pagehide', Store.flush);
     document.addEventListener('visibilitychange', () => { if (document.hidden) Store.flush(); });
     render();
+    setupOffline();
   }
 
-  return { render, start, backFor };
+  /* Aplicația instalabilă (PWA): merge fără internet și se poate pune pe ecranul telefonului. */
+  const api = { render, start, backFor, installPrompt: null, install: null };
+  function setupOffline() {
+    try {
+      if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+      }
+    } catch (e) {}
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      api.installPrompt = e;
+      if (!current || current === 'home') render();
+    });
+    window.addEventListener('appinstalled', () => { api.installPrompt = null; UI.toast('Aplicația e pe ecranul telefonului'); render(); });
+  }
+  api.install = async () => {
+    const p = api.installPrompt;
+    if (!p) return;
+    p.prompt();
+    try { await p.userChoice; } catch (e) {}
+    api.installPrompt = null;
+    render();
+  };
+
+  return api;
 })();
 
 App.start();

@@ -299,3 +299,8 @@ details.manage > .stack { padding: 0 18px 18px; }
 
 /* ---------- Recorduri ---------- */
 .record-kg { font-size: 19px; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* ---------- Reamintire backup ---------- */
+.reminder { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 8px 4px; border: 0; background: none; color: var(--muted); font-size: 15px; text-align: left; }
+.reminder u { color: var(--accent); text-underline-offset: 3px; font-weight: 600; }
+.reminder-dot { width: 8px; height: 8px; flex: none; border-radius: 50%; background: var(--accent); }

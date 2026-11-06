@@ -42,6 +42,15 @@ const Store = (() => {
     try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) {}
   }
 
+  /** Înlocuiește toate datele (folosit la importul unui backup). */
+  function replaceAll(incoming) {
+    data = Object.assign(emptyData(), incoming);
+    data.exercises ||= [];
+    data.templates ||= [];
+    data.workouts ||= [];
+    save();
+  }
+
   function save() {
     try {
       localStorage.setItem(KEY, JSON.stringify(data));
@@ -256,7 +265,7 @@ const Store = (() => {
   }
 
   return {
-    load, save, uid, norm,
+    load, save, uid, norm, replaceAll,
     get saveFailed() { return saveFailed; },
     get raw() { return data; },
     exercises, exercise, exerciseName, findExercise, addExercise, renameExercise, exerciseUseCount, deleteExercise,

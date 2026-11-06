@@ -26,8 +26,19 @@ Pages.home = () => {
     ['backup', 'Backup', 'Salvează sau restaurează datele'],
   ];
 
+  const due = Pages.backupDue && Pages.backupDue();
+  const reminder = due
+    ? h('button', { class: 'reminder', onclick: () => UI.go('backup') },
+        h('span', { class: 'reminder-dot', 'aria-hidden': 'true' }),
+        h('span', null, due.never ? 'Nu ai făcut încă niciun backup.' : 'Ultimul backup a fost acum ' + due.days + ' zile.', ' ', h('u', null, 'Fă backup')))
+    : null;
+  const install = App.installPrompt
+    ? h('button', { class: 'btn btn-ghost btn-block', onclick: App.install }, 'Instalează pe ecranul telefonului')
+    : null;
+
   return UI.page({ title: 'Jurnal de sală' },
     h('button', { class: 'btn btn-primary btn-xl', onclick: () => UI.go('new') }, UI.icon('plus'), 'Antrenament nou'),
+    reminder,
     suggestion,
     h('nav', { class: 'list' },
       nav.map(([route, label, sub]) =>
@@ -35,6 +46,7 @@ Pages.home = () => {
           h('span', { class: 'row-main' }, h('span', { class: 'row-title' }, label), h('span', { class: 'row-sub' }, sub)),
           UI.icon('chev'))),
     ),
+    install,
   );
 };
 
