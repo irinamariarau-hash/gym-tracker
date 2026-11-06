@@ -1,15 +1,15 @@
-/* Layout: o singură coloană îngustă, pentru degetul mare; fundal închis, albastru deschis doar pentru acțiuni. */
+/* Layout: o singură coloană îngustă, pentru degetul mare; fundal închis, mov lila doar pentru acțiuni. */
 :root {
-  --bg: #0c1016;
-  --surface: #141a22;
-  --surface-2: #1b232d;
-  --line: #273140;
-  --fg: #e8edf4;
-  --muted: #8e9bad;
-  --faint: #5f6c7e;
-  --accent: #6ab8ff;
-  --accent-ink: #04121f;
-  --accent-soft: rgba(106, 184, 255, 0.13);
+  --bg: #0e0d14;
+  --surface: #17151f;
+  --surface-2: #1f1c29;
+  --line: #2d2939;
+  --fg: #eeebf5;
+  --muted: #9b95ad;
+  --faint: #6a637b;
+  --accent: #c3a6ff;
+  --accent-ink: #1a0d33;
+  --accent-soft: rgba(195, 166, 255, 0.14);
   --danger: #ff7b7b;
   --danger-soft: rgba(255, 123, 123, 0.12);
 
@@ -172,7 +172,7 @@ details.manage > .stack { padding: 0 18px 18px; }
 /* ---------- Fereastra de jos (sheet) ---------- */
 .sheet-overlay {
   position: fixed; inset: 0; z-index: 50;
-  background: rgba(3, 6, 10, 0.6);
+  background: rgba(6, 4, 12, 0.6);
   display: flex; align-items: flex-end; justify-content: center;
   opacity: 0; transition: opacity .18s ease;
 }
