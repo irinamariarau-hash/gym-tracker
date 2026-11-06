@@ -74,7 +74,10 @@ Pages.workout = (id) => {
   function exerciseCard(en, i) {
     const last = Store.lastPerformance(en.exerciseId, w);
     const lastSets = last ? last.entry.sets : [];
-    const kgIsText = en.kgText || (String(en.kg).trim() !== '' && !isNumber(en.kg));
+    // Tastatura cu litere apare singură dacă azi sau data trecută ai scris text la Kg (ex. „30s”).
+    // Dacă ai ales tu din meniu, rămâne alegerea ta.
+    const isText = (v) => String(v || '').trim() !== '' && !isNumber(v);
+    const kgIsText = en.kgText != null ? en.kgText : isText(en.kg) || (last ? isText(last.entry.kg) : false);
 
     const cell = (label, input) => h('label', { class: 'cell' }, h('span', { class: 'cell-label' }, label), input);
     const setInputs = en.sets.map((val, s) => {
@@ -134,6 +137,7 @@ Pages.workout = (id) => {
   function exerciseMenu(en, i) {
     const name = Store.exerciseName(en.exerciseId);
     const n = w.entries.length;
+    const kgTextNow = document.getElementById('w-' + i + '-kg').inputMode === 'text';
     const act = (fn) => async () => { close(); await fn(); };
     const item = (label, iconName, fn, opts = {}) =>
       h('button', { class: 'menu-item' + (opts.danger ? ' menu-danger' : ''), disabled: opts.disabled, onclick: act(fn) }, UI.icon(iconName), label);
@@ -148,7 +152,7 @@ Pages.workout = (id) => {
           const exId = await UI.pickExercise({ title: 'Înlocuiește ' + name, exclude: w.entries.map((x) => x.exerciseId) });
           if (exId) { en.exerciseId = exId; structural(); }
         }),
-        item(en.kgText ? 'Kg: tastatură cu cifre' : 'Kg: tastatură cu litere (ex. 30s)', 'keyboard', () => { en.kgText = !en.kgText; structural(); }),
+        item(kgTextNow ? 'Kg: tastatură cu cifre' : 'Kg: tastatură cu litere (ex. 30s)', 'keyboard', () => { en.kgText = !kgTextNow; structural(); }),
         item('Șterge din antrenament', 'trash', async () => {
           if (Store.entryHasData(en) && !(await UI.confirm('Ștergi „' + name + '” din antrenament?', { ok: 'Șterge', danger: true, detail: 'Se pierde ce ai scris la el azi.' }))) return;
           w.entries.splice(i, 1);
