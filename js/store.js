@@ -198,6 +198,41 @@ const Store = (() => {
     return best;
   }
 
+  /** Kg ca număr („40”, „42,5”, „40 kg”), sau null pentru text (ex. „30s”). */
+  function kgNumber(v) {
+    const m = String(v || '').trim().match(/^(\d+(?:[.,]\d+)?)\s*(kg)?$/i);
+    return m ? parseFloat(m[1].replace(',', '.')) : null;
+  }
+  /** Totalul de repetări dintr-un exercițiu (doar seturile cu numere). */
+  function totalReps(en) {
+    return en.sets.reduce((sum, s) => sum + (/^\d+$/.test(String(s).trim()) ? parseInt(s, 10) : 0), 0);
+  }
+  /** Toate dățile când ai făcut exercițiul, cele mai noi primele. */
+  function exerciseHistory(exerciseId) {
+    const out = [];
+    for (const w of workouts()) {
+      for (const entry of w.entries) {
+        if (entry.exerciseId === exerciseId && entryHasData(entry)) out.push({ workout: w, entry });
+      }
+    }
+    return out;
+  }
+  /** Recordul (cea mai mare greutate) la fiecare exercițiu, cu data primei dăți când ai atins-o. */
+  function records() {
+    const best = new Map();
+    for (const w of workouts().reverse()) {
+      for (const entry of w.entries) {
+        const kg = kgNumber(entry.kg);
+        if (kg == null) continue;
+        const cur = best.get(entry.exerciseId);
+        if (!cur || kg > cur.kg) best.set(entry.exerciseId, { exerciseId: entry.exerciseId, kg, workout: w, entry });
+      }
+    }
+    return [...best.values()]
+      .filter((r) => exercise(r.exerciseId) && !exercise(r.exerciseId).deleted)
+      .sort((a, b) => exerciseName(a.exerciseId).localeCompare(exerciseName(b.exerciseId), 'en', { sensitivity: 'base' }));
+  }
+
   /** Lista de exerciții din antrenament diferă de cea din template? */
   function differsFromTemplate(w) {
     const t = w.templateId && template(w.templateId);
@@ -228,5 +263,6 @@ const Store = (() => {
     templates, template, createTemplate, updateTemplate, deleteTemplate,
     workouts, workout, suggestNext,
     createWorkout, saveSoon, flush, deleteWorkout, newEntry, entryHasData, workoutHasData, lastPerformance, differsFromTemplate,
+    kgNumber, totalReps, exerciseHistory, records,
   };
 })();
