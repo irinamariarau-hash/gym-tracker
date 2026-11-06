@@ -153,6 +153,59 @@ const Store = (() => {
     return data.workouts.find((w) => w.id === id) || null;
   }
 
+  const newEntry = (exerciseId) => ({ exerciseId, sets: ['', '', ''], kg: '', notes: '' });
+  const entryHasData = (en) => en.sets.some((s) => String(s).trim()) || String(en.kg).trim() !== '' || String(en.notes).trim() !== '';
+  const workoutHasData = (w) => w.entries.some(entryHasData);
+
+  function createWorkout({ templateId = null, name = 'Antrenament', exerciseIds = [] } = {}) {
+    const now = Date.now();
+    const w = {
+      id: uid(), date: UI.today(), name: norm(name) || 'Antrenament', templateId,
+      entries: exerciseIds.map(newEntry), createdAt: now, updatedAt: now,
+    };
+    data.workouts.push(w);
+    save();
+    return w;
+  }
+
+  /* Salvare cu mică întârziere, ca să nu salvăm la fiecare literă. */
+  let saveTimer = null;
+  function saveSoon(w) {
+    if (w) w.updatedAt = Date.now();
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(flush, 300);
+  }
+  function flush() {
+    if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; save(); }
+  }
+  function deleteWorkout(id) {
+    data.workouts = data.workouts.filter((w) => w.id !== id);
+    save();
+  }
+
+  /** Ce ai făcut ultima dată la un exercițiu, într-un antrenament de dinaintea celui dat. */
+  const order = (w) => (w.date || '') + '|' + String(w.createdAt || 0).padStart(15, '0');
+  function lastPerformance(exerciseId, current) {
+    const cur = current ? order(current) : '￿';
+    let best = null;
+    for (const w of data.workouts) {
+      if (current && w.id === current.id) continue;
+      const o = order(w);
+      if (o >= cur || (best && o <= order(best.workout))) continue;
+      const entry = w.entries.find((en) => en.exerciseId === exerciseId && entryHasData(en));
+      if (entry) best = { workout: w, entry };
+    }
+    return best;
+  }
+
+  /** Lista de exerciții din antrenament diferă de cea din template? */
+  function differsFromTemplate(w) {
+    const t = w.templateId && template(w.templateId);
+    if (!t) return false;
+    const a = w.entries.map((en) => en.exerciseId);
+    return a.length !== t.exerciseIds.length || a.some((x, i) => x !== t.exerciseIds[i]);
+  }
+
   /** Sugestia pentru antrenamentul următor, după programul Upper 1 → Lower 1 → Upper 2 → Lower 2. */
   function suggestNext() {
     const last = workouts().find((w) => w.templateId && template(w.templateId));
@@ -174,5 +227,6 @@ const Store = (() => {
     exercises, exercise, exerciseName, findExercise, addExercise, renameExercise, exerciseUseCount, deleteExercise,
     templates, template, createTemplate, updateTemplate, deleteTemplate,
     workouts, workout, suggestNext,
+    createWorkout, saveSoon, flush, deleteWorkout, newEntry, entryHasData, workoutHasData, lastPerformance, differsFromTemplate,
   };
 })();

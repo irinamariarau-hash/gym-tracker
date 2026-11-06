@@ -59,6 +59,8 @@ const UI = (() => {
     search: 'M11 4a7 7 0 1 0 0 14a7 7 0 1 0 0-14M20 20l-4-4',
     swap: 'M7 7h11l-3-3M17 17H6l3 3',
     trash: 'M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12',
+    more: 'M5 12h.01M12 12h.01M19 12h.01',
+    keyboard: 'M3 7h18v10H3zM7 11h.01M11 11h.01M15 11h.01M8 14h8',
   };
   function icon(name) {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');

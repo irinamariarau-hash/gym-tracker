@@ -13,8 +13,33 @@ const App = (() => {
     [/^backup$/, () => (Pages.backup ? Pages.backup() : Pages.soon('Backup', 4))],
   ];
 
+  let current = null;
+  let previous = null;
+
+  /** Unde duce butonul „Înapoi” dintr-un antrenament: în Istoric dacă de acolo ai venit, altfel acasă. */
+  function backFor() {
+    return previous && /^(history|exercise-\w+)$/.test(previous) ? previous : '';
+  }
+
+  /** Un antrenament în care n-ai scris nimic nu rămâne salvat când îl părăsești. */
+  function dropIfEmpty(route) {
+    const m = route && route.match(/^workout-(\w+)$/);
+    if (!m) return;
+    const w = Store.workout(m[1]);
+    if (w && !Store.workoutHasData(w)) {
+      Store.deleteWorkout(w.id);
+      UI.toast('Antrenamentul gol nu a fost păstrat');
+    }
+  }
+
   function render() {
+    Store.flush();
     const route = decodeURIComponent(location.hash.slice(1));
+    if (route !== current) {
+      dropIfEmpty(current);
+      if (!/^workout-/.test(route) || !/^workout-/.test(current || '')) previous = current;
+      current = route;
+    }
     let view = null;
     for (const [re, fn] of routes) {
       const m = route.match(re);
@@ -29,10 +54,13 @@ const App = (() => {
   function start() {
     Store.load();
     window.addEventListener('hashchange', () => { render(); window.scrollTo(0, 0); });
+    // Salvează imediat dacă închizi aplicația sau treci la altă aplicație.
+    window.addEventListener('pagehide', Store.flush);
+    document.addEventListener('visibilitychange', () => { if (document.hidden) Store.flush(); });
     render();
   }
 
-  return { render, start };
+  return { render, start, backFor };
 })();
 
 App.start();
